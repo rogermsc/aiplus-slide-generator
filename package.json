@@ -1,0 +1,41 @@
+{
+  "name": "aiplus-slide-generator",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "generate": "node src/cli/generate-slides.mjs",
+    "generate:course": "node src/cli/generate-course.mjs",
+    "qa": "node tests/qa/qa-report.mjs",
+    "qa:course": "node tests/qa/qa-report.mjs --course",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite --config src/preview/vite.config.ts",
+    "preview:build": "vite build --config src/preview/vite.config.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.27.3",
+    "@google/genai": "0.7.0",
+    "mdast-util-to-string": "4.0.0",
+    "minimist": "1.2.8",
+    "pptxgenjs": "3.12.0",
+    "puppeteer": "22.6.5",
+    "react-router-dom": "6.22.3",
+    "remark-gfm": "4.0.0",
+    "remark-parse": "11.0.0",
+    "sharp": "0.33.3",
+    "unified": "11.0.4",
+    "unist-util-visit": "5.0.0",
+    "zod": "3.23.8"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.1",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "4.3.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "typescript": "5.4.5",
+    "vite": "5.2.11"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
