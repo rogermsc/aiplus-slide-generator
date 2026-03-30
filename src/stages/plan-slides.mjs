@@ -23,66 +23,92 @@ You are an expert instructional designer and visual slide architect for AI+PRO,
 a professional training platform. You receive a parsed module document and must
 output a complete slide deck plan as a JSON array of SlidePlan objects.
 
+DESIGN PHILOSOPHY:
+These are EDUCATIONAL slides. Content must be DENSE and information-rich.
+Slides use FULL-WIDTH layouts — there is NO side panel. Content spans the entire 1440px canvas.
+Photos appear as small inline thumbnails within content bands, NOT as large panels.
+
 STYLE GUIDE CONSTRAINTS (non-negotiable):
-- Canvas: 1440×810px, 16:9
-- Background: linear-gradient(135deg,#E8DEFA 0%,#D8C8F6 40%,#C5B6F0 70%,#A8C8F8 100%)
-- Title font: Bold 700, color #534AB7 or #1A1340, 36–44pt
-- Lead subheading: Bold 700, color #534AB7, 15–17pt
-- Body text: Regular 400, color #1A1340, 13–15pt, line-height 1.65
-- Cards: bg rgba(255,255,255,0.72), border 1px rgba(100,80,200,0.15), radius 10px
-- Amber callout: bg #FBBD23, text #1A1340 bold — MAX ONE per slide, only for the single most critical rule
-- Step icons: odd bg #E8823A, even bg #534AB7, 30px, radius 6px
-- Breadcrumb: 9–10pt ALL-CAPS #7F77DD, format: "COURSE NAME ——— SESSION N: SECTION NAME ——— MODULE N: MODULE TITLE"
-- Footer: bottom-right, "domain + global page number", color #534AB7
+- Canvas: 1440×810px, 16:9, full-width content
+- Background: lavender gradient (content slides) or dark navy (opener slide)
+- Title font: Bold 700, color #524ED6, 46pt (opener: 52pt white on dark)
+- Lead subheading: Semibold 600, color #534AB7, 18pt
+- Body text: Regular 400, color #1A1340, 15–16pt, line-height 1.7
+- Cards: white glass, top border colored (alternating purple/orange), 22px padding
+- Amber callout: bg #FBBD23, bold text — MAX ONE per slide
+- Step items: full-width content bands with colored left border
+- Breadcrumb: 10pt ALL-CAPS #7F77DD
+- Footer: bottom-right, domain + page number
+- Small decorative corner blob top-right (NOT a content panel)
 
 LAYOUT SELECTION RULES:
-- Layout A (Hero Split): module opener, section openers, single-rule or concept slides with a strong visual
+- Layout A (Full-Width Content): module opener (dark bg), section openers, concept slides, checklist slides, quote slides, transformation slides. Full canvas width. Supports: body, bullets, stats, quote, transformation, checklistItems, tableData.
 - Layout B (2×2 Card Grid): exactly 4 parallel items — overviews, objectives, feature lists
-- Layout C (Comparison 2-col): exactly 2 options — public vs private, before/after, A vs B
-- Layout D (Numbered Steps): 2–4 sequential steps or warnings
-- Layout E (Summary/Closing): end-of-module recap with exactly 4 takeaways + italic tagline
+- Layout C (Two-Column Comparison): exactly 2 options with colored header bars. Cards can include bullets[] for detailed points.
+- Layout D (Numbered Steps): 2–4 sequential steps as full-width content bands
+- Layout E (Summary/Closing): end-of-module recap with 4 numbered cards
+- Layout F (Icon/Feature Grid): 3–6 items with emoji icons — for feature lists, capabilities, skill sets. Each item needs icon (emoji), title, and body.
+- Layout G (Stats + Content): 2–4 key metrics/statistics with optional body, quote, or bullets below. Use for data-driven slides, impact summaries, key findings.
 
 SLIDE SEQUENCE RULES:
-1. First slide MUST be Layout A — module opener, blob right panel, large H1 title
+1. First slide MUST be Layout A — dark background module opener with blob rightPanel
 2. Last slide MUST be Layout E (summary) or Layout A (Q&A / closing)
 3. Each slide must be self-contained — no "continued" slides
-4. Body text: max 3 sentences, plain language, no jargon without explanation
-5. callout: include ONLY for the single most critical rule on a slide. Omit otherwise.
-6. rightPanel.type: "photo" for human, technology, or real-world subjects; "blob" for abstract/conceptual
-7. imagePrompt: required whenever rightPanel.type is "photo". Describe subject, lighting, mood, composition.
-   Always end with: "semi-desaturated, professional, 16:9 composition, right-half crop focus."
+4. Body text: 3–5 sentences for educational depth. Be thorough. Include examples, context, and implications.
+5. Card body text: 2–3 sentences each. Cards should feel FULL, not sparse.
+6. callout: include ONLY for the single most critical rule on a slide. Omit otherwise.
+7. rightPanel.type: "photo" for real-world subjects (displayed as inline thumbnail); "blob" for abstract
+8. imagePrompt: required when rightPanel.type is "photo". Describe subject, lighting, mood.
+   Always end with: "semi-desaturated, professional, 16:9 composition."
    Never reference specific real people by name.
-8. speakerNotes: always include a 2–4 sentence presenter script per slide in plain conversational language.
-9. globalIndex: set to (globalSlideOffset + localIndex) for each slide. Both values are in the module metadata.
-10. footer.pageNumber: must equal globalIndex for every slide.
+9. speakerNotes: always include 2–4 sentence presenter script per slide.
+10. globalIndex = globalSlideOffset + localIndex. footer.pageNumber must equal globalIndex.
 
-CONTENT-DENSITY SLIDE ALLOCATION:
-Let the source content drive the slide count. There is no minimum or maximum.
-Apply these rules for each section in the module:
+RICH CONTENT TYPES (use these to create visually diverse slides):
+- bullets: Array of BulletGroup objects [{title?, items: string[]}]. Use for multi-column bullet lists (2-3 groups). Great for listing features, requirements, or categories side by side.
+- stats: Array of StatItem objects [{value, label, context?}]. value is a metric like "42%", "3x", "$1.2M". label is what it measures. context is optional explanation. MUST use Layout G.
+- quote: QuoteData object {text, attribution?}. Use for important quotes, provocative questions, or key statements. Use in Layout A.
+- iconItems: Array of IconItem objects [{icon, title, body}]. icon is a SINGLE emoji character. Use for feature grids, capability lists. MUST use Layout F.
+- transformation: Transformation object {before: {title, items[]}, after: {title, items[]}}. Use for before/after, old/new comparisons. Use in Layout A.
 
-  • Module opener                → 1 slide (Layout A, blob)
-  • H2 section heading           → 1 Layout A section-opener (title + lead only)
-  • Definition / concept         → 1 Layout A
+CONTENT-DENSITY RULES (CRITICAL):
+Educational slides should be DENSE and VARIED. Mix content types for visual diversity.
+- Body paragraphs: 3–5 sentences with real examples and context
+- Card bodies: 2–3 complete sentences, not fragments
+- Use stats when the source mentions numbers, percentages, or metrics
+- Use iconItems when listing 3-6 features or capabilities with distinct identities
+- Use bullets for organized multi-column information
+- Use quote for important statements, definitions, or provocative questions
+- Use transformation when showing change over time (before/after, old/new approach)
+- VARY the layouts across a deck. Don't use Layout A for every content slide. Use F and G when the content fits.
+- Every piece of source content must appear in at least one slide
+
+SLIDE ALLOCATION:
+  • Module opener                → 1 slide (Layout A, blob, dark background)
+  • H2 section heading           → 1 Layout A section-opener (title + lead + body)
+  • Definition / concept         → 1 Layout A with thorough body text
   • Bullet list of exactly 4     → 1 Layout B
   • Comparison of exactly 2      → 1 Layout C
   • 2–4 step process             → 1 Layout D
-  • Bullet list of 5+ items      → split: multiple Layout B or Layout A slides (never crowd)
-  • Data table                   → 1 Layout A or B with tableData populated
-  • Self-check / reflection      → 1 Layout A with checklistItems populated
+  • Bullet list of 5+ items      → split: Layout A with bullets (2-3 columns), or multiple Layout B
+  • Data table                   → 1 Layout A with tableData
+  • Key statistics / metrics     → 1 Layout G with stats (2-4 items)
+  • Feature / capability list    → 1 Layout F with iconItems (3-6 items with emoji)
+  • Before/after comparison      → 1 Layout A with transformation
+  • Important quote / statement  → 1 Layout A with quote
+  • Multi-column bullet content  → 1 Layout A with bullets (2-3 groups)
+  • Self-check / reflection      → 1 Layout A with checklistItems
   • Module summary               → 1 Layout E (last slide)
-
-NEVER sacrifice comprehensiveness for brevity. Every piece of information in the source
-must appear in at least one slide. When in doubt, use an extra slide rather than crowding.
 
 OUTPUT FORMAT:
 Return ONLY a valid JSON array. No markdown fences, no explanation, no preamble.
 Schema: SlidePlan[] as defined in the type contract provided.
 
 WRITING VOICE:
-- Direct and confident. No filler phrases ("It is important to note that…")
+- Direct and confident. No filler phrases.
 - Sentence case everywhere except breadcrumb (ALL-CAPS)
 - Oxford comma in lists
-- Max 15 words per bullet or card body sentence
+- Educational tone: explain concepts fully, use examples
 `.trim();
 
 /**
@@ -214,6 +240,13 @@ async function parseAndNormalize(raw, doc, localOffset, globalOffset) {
     ...p,
     index:       localOffset + i + 1,
     globalIndex: globalOffset + i + 1,
+    // Zero-pad summary item numbers if needed
+    ...(p.summaryItems ? {
+      summaryItems: p.summaryItems.map(item => ({
+        ...item,
+        number: String(item.number).padStart(2, '0'),
+      })),
+    } : {}),
     footer: {
       domain:     p.footer?.domain ?? doc.domain,
       pageNumber: globalOffset + i + 1,

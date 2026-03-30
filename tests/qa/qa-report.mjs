@@ -5,7 +5,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 
 const isCourse = process.argv.includes('--course');
-const outDir   = process.argv.find(a => !a.startsWith('-') && a !== process.argv[1]);
+const outDir   = process.argv.slice(2).find(a => !a.startsWith('-'));
 if (!outDir) { console.error('Pass output directory as argument'); process.exit(1); }
 
 let passed = 0, failed = 0;
@@ -72,10 +72,10 @@ for (const moduleDir of moduleDirs) {
     check(`${n}: AUTO-GENERATED header`,         () => { if (!content.includes('AUTO-GENERATED')) throw new Error(); });
     check(`${n}: slideMeta export`,               () => { if (!content.includes('export const slideMeta')) throw new Error(); });
     check(`${n}: slideData export`,               () => { if (!content.includes('export const slideData')) throw new Error(); });
-    check(`${n}: layout component imported`,      () => { if (!content.match(/from '.*layouts\/Layout[A-E]'/)) throw new Error(); });
+    check(`${n}: layout component imported`,      () => { if (!content.match(/from '.*layouts\/Layout[A-G]'/)) throw new Error(); });
     check(`${n}: no useState / useEffect`,        () => { if (content.includes('useState') || content.includes('useEffect')) throw new Error(); });
     check(`${n}: no fetch / axios calls`,         () => { if (content.includes('fetch(') || content.includes('axios')) throw new Error(); });
-    check(`${n}: canvas 1440×810`,                () => { if (!content.includes('width: 1440') || !content.includes('height: 810')) throw new Error(); });
+    check(`${n}: canvas 1440×810`,                () => { if (!content.match(/width:\s+1440/) || !content.match(/height:\s+810/)) throw new Error(); });
     check(`${n}: __SLIDE_DATA_START__ marker`,    () => { if (!content.includes('__SLIDE_DATA_START__')) throw new Error(); });
   });
 

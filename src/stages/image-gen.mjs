@@ -49,22 +49,49 @@ export async function generateImages(plans, outDir) {
 }
 
 async function generateOne(plan, outDir) {
-  const prompt   = buildPrompt(plan.imagePrompt);
+  const prompt = buildPrompt(plan.imagePrompt);
+
+  // Attempt 1: Gemini Flash with native image generation (free tier)
+  try {
+    const response = await retry(
+      () => getGenAI().models.generateContent({
+        model: 'gemini-2.5-flash-image',
+        contents: prompt,
+        config: { responseModalities: ['IMAGE', 'TEXT'] },
+      }),
+      { attempts: 2, delayMs: 3000, backoffMultiplier: 2 }
+    );
+
+    const imagePart = response.candidates?.[0]?.content?.parts
+      ?.find(p => p.inlineData?.mimeType?.startsWith('image/'));
+
+    if (imagePart?.inlineData?.data) {
+      return await saveImage(imagePart.inlineData.data, plan.index, outDir);
+    }
+    console.warn(`    [image-gen] Flash returned no image for slide ${plan.index}, trying Imagen…`);
+  } catch (err) {
+    console.warn(`    [image-gen] Flash failed for slide ${plan.index}: ${err.message}`);
+  }
+
+  // Attempt 2: Imagen 3.0 (paid tier)
   const response = await retry(
     () => getGenAI().models.generateImages({
       model:  'imagen-3.0-generate-002',
       prompt,
       config: { numberOfImages: 1, outputMimeType: 'image/png', aspectRatio: '16:9' },
     }),
-    { attempts: 3, delayMs: 4000, backoffMultiplier: 2 }
+    { attempts: 2, delayMs: 4000, backoffMultiplier: 2 }
   );
 
   const imgData = response.generatedImages?.[0]?.image?.imageBytes;
   if (!imgData) throw new Error('No image bytes returned');
+  return await saveImage(imgData, plan.index, outDir);
+}
 
-  const filename = `img_slide${String(plan.index).padStart(3, '0')}.png`;
+async function saveImage(base64Data, slideIndex, outDir) {
+  const filename = `img_slide${String(slideIndex).padStart(3, '0')}.png`;
   const filepath = path.join(outDir, filename);
-  await fs.writeFile(filepath, Buffer.from(imgData, 'base64'));
+  await fs.writeFile(filepath, Buffer.from(base64Data, 'base64'));
   return filepath;
 }
 

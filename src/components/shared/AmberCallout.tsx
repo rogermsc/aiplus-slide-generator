@@ -5,11 +5,13 @@ export function AmberCallout({ text }: { text: string }) {
   return (
     <div style={{
       background: COLORS.amber, borderRadius: SPACING.calloutRadius,
-      padding: '12px 16px', fontFamily: TYPOGRAPHY.fontFamily,
+      padding: '14px 20px', fontFamily: TYPOGRAPHY.fontFamily,
       fontSize: TYPOGRAPHY.sizes.callout, fontWeight: TYPOGRAPHY.weights.bold,
       color: COLORS.navyBody, lineHeight: TYPOGRAPHY.lineHeights.body,
+      display: 'flex', alignItems: 'center', gap: 12,
     }}>
-      {text}
+      <span style={{ fontSize: 18, flexShrink: 0 }}>!</span>
+      <span>{text}</span>
     </div>
   );
 }

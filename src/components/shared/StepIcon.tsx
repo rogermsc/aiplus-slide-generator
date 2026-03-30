@@ -9,7 +9,10 @@ export function StepIcon({ number }: { number: number }) {
       borderRadius: SPACING.stepIconRadius, background: bg, flexShrink: 0,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      <span style={{ fontFamily: TYPOGRAPHY.fontFamily, fontSize: 12, fontWeight: TYPOGRAPHY.weights.bold, color: COLORS.white }}>{number}</span>
+      <span style={{
+        fontFamily: TYPOGRAPHY.fontFamily, fontSize: 16,
+        fontWeight: TYPOGRAPHY.weights.bold, color: COLORS.white,
+      }}>{number}</span>
     </div>
   );
 }

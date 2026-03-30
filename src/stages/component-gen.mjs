@@ -31,7 +31,13 @@ export function generateComponents(plans, outDir, moduleTitle, durationInFrames 
 
 function renderComponent(plan, total, moduleTitle, durationInFrames) {
   const nnn     = String(plan.index).padStart(3, '0');
-  const planStr = JSON.stringify(plan, null, 2)
+  // Resolve image paths to absolute with /@fs/ prefix for Vite dev serving
+  const planCopy = { ...plan };
+  if (planCopy.rightPanel?.imagePath) {
+    const absPath = path.resolve(planCopy.rightPanel.imagePath);
+    planCopy.rightPanel = { ...planCopy.rightPanel, imagePath: `/@fs${absPath}` };
+  }
+  const planStr = JSON.stringify(planCopy, null, 2)
     .split('\n')
     .map((l, i) => i === 0 ? l : `  ${l}`)
     .join('\n');
@@ -44,8 +50,8 @@ function renderComponent(plan, total, moduleTitle, durationInFrames) {
 // ─────────────────────────────────────────────────────────────────────────
 
 import React from 'react';
-import { Layout${plan.layout} } from '../../components/layouts/Layout${plan.layout}';
-import type { SlidePlan } from '../../types/slide.types';
+import { Layout${plan.layout} } from '@components/layouts/Layout${plan.layout}';
+import type { SlidePlan } from '@types/slide.types';
 
 // __SLIDE_DATA_START__
 export const slideData: SlidePlan = ${planStr};

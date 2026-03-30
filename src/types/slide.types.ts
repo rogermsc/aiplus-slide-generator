@@ -21,7 +21,7 @@ export interface Section {
 
 // ─── Plan ─────────────────────────────────────────────────────────────────
 
-export type LayoutType = 'A' | 'B' | 'C' | 'D' | 'E';
+export type LayoutType = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G';
 
 export interface SlidePlan {
   index:           number;         // 1-based, module-local
@@ -35,6 +35,11 @@ export interface SlidePlan {
   summaryItems?:   SummaryItem[];  // Layout E: exactly 4 items
   tableData?:      TableData;      // For DataTable component
   checklistItems?: string[];       // For CheckListBox component
+  bullets?:        BulletGroup[];   // Multi-column bullet lists (2-3 groups)
+  stats?:          StatItem[];     // 2-4 stat callouts
+  quote?:          QuoteData;      // Styled attributed quote
+  iconItems?:      IconItem[];     // 3-4 icon/feature grid items
+  transformation?: Transformation; // Before/after comparison
   callout?:        string;         // Amber callout — max one per slide
   speakerNotes?:   string;         // 2–4 sentence presenter script
   rightPanel:      RightPanel;
@@ -43,10 +48,16 @@ export interface SlidePlan {
   imagePrompt?:    string;         // Gemini prompt when rightPanel.type === 'photo'
 }
 
-export interface CardItem    { title: string; body: string; }
+export interface CardItem    { title: string; body: string; bullets?: string[]; }
 export interface StepItem    { number: number; title: string; body: string; }
 export interface SummaryItem { number: string; title: string; body?: string; }
 export interface TableData   { headers: string[]; rows: string[][]; }
+
+export interface BulletGroup    { title?: string; items: string[]; }
+export interface StatItem       { value: string; label: string; context?: string; }
+export interface QuoteData      { text: string; attribution?: string; }
+export interface IconItem       { icon: string; title: string; body: string; }
+export interface Transformation { before: { title: string; items: string[] }; after: { title: string; items: string[] }; }
 
 export interface RightPanel {
   type:       'photo' | 'blob';
