@@ -7,7 +7,7 @@ const SummaryItemSchema = z.object({ number: z.string().regex(/^\d{1,2}$/), titl
 const BulletGroupSchema = z.object({ title: z.string().optional(), items: z.array(z.string().min(1)).min(1).max(12) });
 const StatItemSchema    = z.object({ value: z.string().min(1).max(20), label: z.string().min(1).max(80), context: z.string().max(200).optional() });
 const QuoteDataSchema   = z.object({ text: z.string().min(1).max(500), attribution: z.string().max(100).optional() });
-const IconItemSchema    = z.object({ icon: z.string().min(1).max(4), title: z.string().min(1).max(80), body: z.string().min(1).max(300) });
+const IconItemSchema    = z.object({ icon: z.string().min(1).max(4), title: z.string().min(1).max(80), body: z.string().min(1).max(500) });
 const TransformationSchema = z.object({
   before: z.object({ title: z.string().min(1), items: z.array(z.string()).min(1).max(6) }),
   after:  z.object({ title: z.string().min(1), items: z.array(z.string()).min(1).max(6) }),

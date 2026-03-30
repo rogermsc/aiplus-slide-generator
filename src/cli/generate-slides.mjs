@@ -2,6 +2,7 @@
 // node generate-slides.mjs <module.md> [--session "SESSION 1"] [--module "MODULE 1"]
 //                                      [--domain aiplus.domain] [--out ./out]
 //                                      [--duration 150] [--skip-images]
+//                                      [--critique] [--critique-passes 1]
 
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path     from 'node:path';
@@ -11,6 +12,7 @@ import { planSlides }        from '../stages/plan-slides.mjs';
 import { validatePlans }     from '../stages/validate-plans.mjs';
 import { generateImages, cropRightPanel } from '../stages/image-gen.mjs';
 import { generateComponents } from '../stages/component-gen.mjs';
+import { critiqueAndFix }    from '../stages/critique-slides.mjs';
 import { screenshotSlides, buildPptx } from '../stages/export-pptx.mjs';
 import { slugify }           from '../utils/slugify.mjs';
 
@@ -28,6 +30,8 @@ const meta = {
   sourceFile:        inputFile,
 };
 const durationInFrames = parseInt(argv.duration ?? '150', 10);
+const doCritique       = argv.critique ?? false;
+const critiquePasses   = Math.min(parseInt(argv['critique-passes'] ?? '1', 10), 3);
 
 console.log('\n🚀 AI+PRO Slide Generator (single module)\n');
 
@@ -37,7 +41,7 @@ const outDir = path.resolve(argv.out ?? './out', slug);
 mkdirSync(outDir, { recursive: true });
 
 console.log('🧠 Stage 2: Planning (Opus)…');
-const plans = await planSlides(doc);
+let plans = await planSlides(doc);
 validatePlans(plans);
 writeFileSync(path.join(outDir, 'plan.json'), JSON.stringify(plans, null, 2), 'utf8');
 console.log(`   ${plans.length} slides planned`);
@@ -54,8 +58,24 @@ if (!argv['skip-images']) {
 console.log('\n⚛️  Stage 4: React components…');
 generateComponents(plans, outDir, doc.moduleTitle, durationInFrames);
 
+if (doCritique) {
+  console.log('\n🔍 Stage 4.5: Visual critique…');
+  plans = await critiqueAndFix(plans, outDir, doc.moduleTitle, {
+    passes: critiquePasses,
+    durationInFrames,
+  });
+  writeFileSync(path.join(outDir, 'plan.json'), JSON.stringify(plans, null, 2), 'utf8');
+  console.log('   Updated plan saved');
+}
+
 console.log('\n📊 Stage 5: PPTX…');
-const screenshots = await screenshotSlides(plans.length, outDir);
-await buildPptx(screenshots, path.join(outDir, 'export.pptx'), doc.moduleTitle);
+import { startPreviewServer } from '../utils/preview-server.mjs';
+const pptxServer = await startPreviewServer(outDir, 5173);
+try {
+  const screenshots = await screenshotSlides(plans.length, outDir, pptxServer.url);
+  await buildPptx(screenshots, path.join(outDir, 'export.pptx'), doc.moduleTitle);
+} finally {
+  await pptxServer.stop();
+}
 
 console.log(`\n✅ Done → ${outDir}  (${plans.length} slides)`);
