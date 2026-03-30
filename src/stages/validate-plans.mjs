@@ -53,6 +53,24 @@ const SlidePlanSchema = z.object({
     ctx.addIssue({ code: 'custom', path: ['imagePrompt'],  message: 'Photo panel slides must include imagePrompt' });
   if (data.footer.pageNumber !== data.globalIndex)
     ctx.addIssue({ code: 'custom', path: ['footer'],       message: `pageNumber (${data.footer.pageNumber}) must equal globalIndex (${data.globalIndex})` });
+
+  // Field-layout enforcement: warn about content that won't render
+  const contentSupport = {
+    A: ['body','tableData','checklistItems','bullets','stats','quote','transformation','callout','cards'],
+    B: ['cards','callout','body'],
+    C: ['cards','body','callout'],
+    D: ['steps','callout','body'],
+    E: ['summaryItems','body'],
+    F: ['iconItems','body','callout'],
+    G: ['stats','body','quote','bullets','callout'],
+  };
+  const contentFields = ['body','cards','steps','summaryItems','tableData','checklistItems','bullets','stats','quote','iconItems','transformation','callout'];
+  const supported = contentSupport[data.layout] ?? [];
+  for (const field of contentFields) {
+    if (data[field] !== undefined && data[field] !== null && !supported.includes(field)) {
+      console.warn(`[validate] Slide ${data.index}: "${field}" set but Layout ${data.layout} does not render it — content will be lost`);
+    }
+  }
 });
 
 export function validatePlans(plans) {

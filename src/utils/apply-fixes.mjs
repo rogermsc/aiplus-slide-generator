@@ -42,6 +42,34 @@ export function applyFixes(plans, critique) {
         if (fix.field === 'summaryItems' && Array.isArray(value)) {
           value = value.map(s => ({ ...s, number: String(s.number).padStart(2, '0') }));
         }
+        // Auto-coerce stats: ensure value/label are strings
+        if (fix.field === 'stats' && Array.isArray(value)) {
+          value = value.map(s => ({ ...s, value: String(s.value ?? ''), label: String(s.label ?? '') }));
+        }
+        // Auto-coerce iconItems: truncate body, limit icon length
+        if (fix.field === 'iconItems' && Array.isArray(value)) {
+          value = value.map(s => ({
+            ...s,
+            icon: String(s.icon ?? '').slice(0, 4),
+            title: String(s.title ?? ''),
+            body: String(s.body ?? '').slice(0, 500),
+          }));
+        }
+        // Auto-coerce quote: ensure object format
+        if (fix.field === 'quote' && typeof value === 'string') {
+          value = { text: value };
+        }
+        if (fix.field === 'quote' && typeof value === 'object') {
+          value = { text: String(value.text ?? ''), ...(value.attribution ? { attribution: String(value.attribution) } : {}) };
+        }
+        // Auto-coerce transformation: ensure before/after structure
+        if (fix.field === 'transformation' && typeof value === 'object') {
+          const coerceHalf = (h) => ({
+            title: String(h?.title ?? ''),
+            items: Array.isArray(h?.items) ? h.items.map(String) : [],
+          });
+          value = { before: coerceHalf(value.before), after: coerceHalf(value.after) };
+        }
         plan[fix.field] = value;
       }
     }

@@ -101,21 +101,27 @@ export async function critiqueAndFix(plans, outDir, moduleTitle, options = {}) {
         console.log(`      Slide ${item.slideIndex}: ${item.issues?.[0] ?? 'fix applied'}`);
       }
 
-      // 5. Apply fixes
-      currentPlans = applyFixes(currentPlans, critique);
+      // 5. Apply fixes per-slide (don't let one bad fix kill all)
+      let fixedCount = 0;
+      for (const item of critique) {
+        const testPlans = applyFixes([...currentPlans.map(p => ({ ...p }))], [item]);
+        try {
+          validatePlans(testPlans);
+          currentPlans = testPlans;
+          fixedCount++;
+        } catch (err) {
+          console.warn(`      ⚠ Slide ${item.slideIndex} fix failed, skipping: ${err.message.split('\n')[0]}`);
+        }
+      }
 
-      // 6. Validate
-      try {
-        validatePlans(currentPlans);
-      } catch (err) {
-        console.warn(`    ⚠ Validation failed after fixes, reverting: ${err.message}`);
-        currentPlans = plans; // Revert to original
+      if (fixedCount === 0) {
+        console.log('    ⚠ No fixes could be applied — keeping original');
         break;
       }
 
-      // 7. Re-generate components
+      // 6. Re-generate components
       generateComponents(currentPlans, outDir, moduleTitle, durationInFrames);
-      console.log(`    ✓ Pass ${pass + 1} complete — ${critique.length} fixes applied`);
+      console.log(`    ✓ Pass ${pass + 1} complete — ${fixedCount}/${critique.length} fixes applied`);
 
     } finally {
       await server.stop();

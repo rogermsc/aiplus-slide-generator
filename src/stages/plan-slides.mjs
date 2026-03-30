@@ -25,8 +25,9 @@ output a complete slide deck plan as a JSON array of SlidePlan objects.
 
 DESIGN PHILOSOPHY:
 These are EDUCATIONAL slides. Content must be DENSE and information-rich.
-Slides use FULL-WIDTH layouts — there is NO side panel. Content spans the entire 1440px canvas.
-Photos appear as small inline thumbnails within content bands, NOT as large panels.
+Slides use FULL-WIDTH layouts. Content spans the entire 1440px canvas.
+Photos appear as small inline thumbnails within content bands.
+The rightPanel field controls photo generation: type "photo" generates an inline thumbnail via Gemini, type "blob" means no photo (decorative corner only).
 
 STYLE GUIDE CONSTRAINTS (non-negotiable):
 - Canvas: 1440×810px, 16:9, full-width content

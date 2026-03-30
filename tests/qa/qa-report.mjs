@@ -112,6 +112,18 @@ for (const moduleDir of moduleDirs) {
       if (p.summaryItems?.length !== 4) throw new Error(`Slide ${p.index}`);
     });
   });
+  check('Layout F = 3-6 iconItems', () => {
+    plans.filter(p => p.layout === 'F').forEach(p => {
+      const n = p.iconItems?.length ?? 0;
+      if (n < 3 || n > 6) throw new Error(`Slide ${p.index}: ${n} iconItems`);
+    });
+  });
+  check('Layout G = 2-4 stats', () => {
+    plans.filter(p => p.layout === 'G').forEach(p => {
+      const n = p.stats?.length ?? 0;
+      if (n < 2 || n > 4) throw new Error(`Slide ${p.index}: ${n} stats`);
+    });
+  });
   check('No slide title > 80 chars', () => {
     plans.forEach(p => { if (p.slideTitle?.length > 80) throw new Error(`Slide ${p.index}`); });
   });
