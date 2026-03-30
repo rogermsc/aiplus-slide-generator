@@ -26,7 +26,7 @@ const SlidePlanSchema = z.object({
   tableData:       z.object({ headers: z.array(z.string()), rows: z.array(z.array(z.string())) }).optional(),
   checklistItems:  z.array(z.string()).optional(),
   bullets:         z.array(BulletGroupSchema).min(1).max(4).optional(),
-  stats:           z.array(StatItemSchema).min(2).max(4).optional(),
+  stats:           z.array(StatItemSchema).min(1).max(4).optional(),
   quote:           QuoteDataSchema.optional(),
   iconItems:       z.array(IconItemSchema).min(3).max(6).optional(),
   transformation:  TransformationSchema.optional(),
@@ -47,7 +47,7 @@ const SlidePlanSchema = z.object({
     ctx.addIssue({ code: 'custom', path: ['summaryItems'], message: 'Layout E requires exactly 4 summary items' });
   if (data.layout === 'F' && (!data.iconItems || data.iconItems.length < 3 || data.iconItems.length > 6))
     ctx.addIssue({ code: 'custom', path: ['iconItems'],    message: 'Layout F requires 3-6 iconItems' });
-  if (data.layout === 'G' && (!data.stats || data.stats.length < 2 || data.stats.length > 4))
+  if (data.layout === 'G' && (!data.stats || data.stats.length < 1 || data.stats.length > 4))
     ctx.addIssue({ code: 'custom', path: ['stats'],        message: 'Layout G requires 2-4 stats' });
   if (data.rightPanel.type === 'photo' && !data.imagePrompt)
     ctx.addIssue({ code: 'custom', path: ['imagePrompt'],  message: 'Photo panel slides must include imagePrompt' });
@@ -73,7 +73,11 @@ const SlidePlanSchema = z.object({
   }
 });
 
-export function validatePlans(plans) {
+/**
+ * @param {Array} plans
+ * @param {{ partial?: boolean }} options - partial=true skips first/last slide rules (for chunks)
+ */
+export function validatePlans(plans, { partial = false } = {}) {
   if (!Array.isArray(plans) || plans.length === 0)
     throw new Error('[validate] Plans array is empty or not an array');
 
@@ -88,12 +92,14 @@ export function validatePlans(plans) {
     throw new Error(`${errors.length} slide(s) failed schema validation`);
   }
 
-  if (plans[0].layout !== 'A')
-    throw new Error(`First slide must be Layout A, got ${plans[0].layout}`);
+  if (!partial) {
+    if (plans[0].layout !== 'A')
+      throw new Error(`First slide must be Layout A, got ${plans[0].layout}`);
 
-  const last = plans.at(-1);
-  if (last.layout !== 'E' && last.layout !== 'A')
-    throw new Error(`Last slide must be Layout E or A, got ${last.layout}`);
+    const last = plans.at(-1);
+    if (last.layout !== 'E' && last.layout !== 'A')
+      throw new Error(`Last slide must be Layout E or A, got ${last.layout}`);
+  }
 
   for (let i = 1; i < plans.length; i++) {
     if (plans[i].globalIndex !== plans[i - 1].globalIndex + 1)

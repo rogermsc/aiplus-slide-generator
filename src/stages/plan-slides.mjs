@@ -179,7 +179,7 @@ async function singleCall(doc, sections, typeSchemaJSON, globalOffset, localOffs
     .map(b => b.text)
     .join('');
 
-  return parseAndNormalize(raw, doc, localOffset, globalOffset);
+  return parseAndNormalize(raw, doc, localOffset, globalOffset, !!chunkRole);
 }
 
 function buildChunkHint(role) {
@@ -221,7 +221,7 @@ Generate the SlidePlan[] array for the sections above now.
 `.trim();
 }
 
-async function parseAndNormalize(raw, doc, localOffset, globalOffset) {
+async function parseAndNormalize(raw, doc, localOffset, globalOffset, isChunk = false) {
   const cleaned = raw
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```$/i, '')
@@ -254,7 +254,7 @@ async function parseAndNormalize(raw, doc, localOffset, globalOffset) {
     },
   }));
 
-  validatePlans(normalized);
+  validatePlans(normalized, { partial: isChunk });
   return normalized;
 }
 

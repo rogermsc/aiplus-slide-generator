@@ -87,9 +87,27 @@ export async function critiqueAndFix(plans, outDir, moduleTitle, options = {}) {
       console.log(`    Screenshotting ${currentPlans.length} slides…`);
       const screenshots = await screenshotToBase64(currentPlans.length, server.url);
 
-      // 4. Send to Claude vision
-      console.log('    Sending to Claude vision for critique…');
-      const critique = await visionCritique(currentPlans, screenshots);
+      // 4. Send to Claude vision (batch if too many slides)
+      const BATCH_SIZE = 10;
+      let critique = [];
+      if (screenshots.length <= BATCH_SIZE) {
+        console.log('    Sending to Claude vision for critique…');
+        critique = await visionCritique(currentPlans, screenshots);
+      } else {
+        const batches = Math.ceil(screenshots.length / BATCH_SIZE);
+        console.log(`    Sending to Claude vision in ${batches} batches (${BATCH_SIZE} slides each)…`);
+        for (let bi = 0; bi < batches; bi++) {
+          const batchScreenshots = screenshots.slice(bi * BATCH_SIZE, (bi + 1) * BATCH_SIZE);
+          const batchPlans = currentPlans.filter(p => batchScreenshots.some(s => s.index === p.index));
+          console.log(`      Batch ${bi + 1}/${batches} (slides ${batchScreenshots[0].index}-${batchScreenshots.at(-1).index})…`);
+          try {
+            const batchCritique = await visionCritique(batchPlans, batchScreenshots);
+            critique.push(...batchCritique);
+          } catch (err) {
+            console.warn(`      ⚠ Batch ${bi + 1} critique failed: ${err.message.split('\n')[0]}`);
+          }
+        }
+      }
 
       if (critique.length === 0) {
         console.log('    ✓ All slides passed critique — no fixes needed');
