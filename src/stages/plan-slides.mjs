@@ -248,6 +248,14 @@ async function parseAndNormalize(raw, doc, localOffset, globalOffset, isChunk = 
         number: String(item.number).padStart(2, '0'),
       })),
     } : {}),
+    // Truncate icon emoji to 4 chars max
+    ...(p.iconItems ? {
+      iconItems: p.iconItems.map(item => ({
+        ...item,
+        icon: String(item.icon ?? '').slice(0, 4),
+        body: String(item.body ?? '').slice(0, 500),
+      })),
+    } : {}),
     footer: {
       domain:     p.footer?.domain ?? doc.domain,
       pageNumber: globalOffset + i + 1,
